@@ -11,10 +11,10 @@ global_text = ""
 lock = Lock()
 
 # ===============================
-# ENV VARIABLES
+# ENV VARIABLES (never hardcode!)
 # ===============================
 SECRET_KEY = os.environ.get("SECRET_KEY")
-ALLOWED_IPS = os.environ.get("ALLOWED_IPS", "")
+ALLOWED_IPS = os.environ.get("ALLOWED_IPS", "")  # comma-separated IPs
 ALLOWED_IPS = [ip.strip() for ip in ALLOWED_IPS.split(",") if ip.strip()]
 
 if not SECRET_KEY:
@@ -26,7 +26,7 @@ if not SECRET_KEY:
 def is_authorized(req):
     auth = req.headers.get("X-Auth")
 
-    # Only POST requests require IP check (C# client)
+    # Only enforce IP check for POST requests (C# client)
     if req.method == "POST":
         ip = req.remote_addr
         if ip not in ALLOWED_IPS:
@@ -52,6 +52,7 @@ def get_text():
     with lock:
         if not global_text:
             return Response("", status=204)
+
         text = global_text
         global_text = ""  # delete after sending
         return Response(text, mimetype="text/plain")
