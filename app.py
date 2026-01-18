@@ -11,32 +11,32 @@ global_text = ""
 lock = Lock()
 
 # ===============================
-# ENV VARIABLES (never hardcode!)
+# ENV VARIABLES
 # ===============================
 SECRET_KEY = os.environ.get("SECRET_KEY")
-ALLOWED_IPS = os.environ.get("ALLOWED_IPS", "")  # comma-separated IPs
+ALLOWED_IPS = os.environ.get("ALLOWED_IPS", "")  # comma-separated IPs for C# POST
 ALLOWED_IPS = [ip.strip() for ip in ALLOWED_IPS.split(",") if ip.strip()]
 
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY not set in environment variables!")
 
 # ===============================
-# HELPER FUNCTION: CHECK AUTH
+# AUTHORIZATION FUNCTION
 # ===============================
 def is_authorized(req):
     auth = req.headers.get("X-Auth")
 
-    # Only enforce IP check for POST requests (C# client)
+    # All requests must provide correct secret key
+    if auth != SECRET_KEY:
+        print(f"[Unauthorized key] {req.remote_addr}")
+        return False
+
+    # Only POST requests are IP-restricted (C# client)
     if req.method == "POST":
         ip = req.remote_addr
         if ip not in ALLOWED_IPS:
             print(f"[Unauthorized POST IP] {ip}")
             return False
-
-    # All requests require correct secret key
-    if auth != SECRET_KEY:
-        print(f"[Unauthorized key] {req.remote_addr}")
-        return False
 
     return True
 
