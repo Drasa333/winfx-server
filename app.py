@@ -60,3 +60,4 @@ def set_text():
         global_text = new_text
 
     return "OK", 200
+add the check
