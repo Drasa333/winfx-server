@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, request, Response
 from threading import Lock
 import os
@@ -14,10 +13,17 @@ lock = Lock()
 # ===============================
 # AUTH SECRET
 # ===============================
-# Put this in Render Environment Variables
+# BEST PRACTICE:
+# Put SECRET_KEY in Render Environment Variables
+#
+# FALLBACK (ONLY FOR TESTING):
+# If no env var exists, this string will be used.
+#
+# ⚠️ CHANGE THIS STRING TO YOUR OWN RANDOM KEY
+# ===============================
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
-    "x82kS9d8sd9f8sd7f98sd7f9sd87f9sd87f9sd87f9sd87"  # fallback ONLY for testing
+    "WINFX_91fA3cX9KQ72mP"
 )
 
 # ===============================
@@ -29,15 +35,11 @@ def get_text():
     if auth != SECRET_KEY:
         return Response("Forbidden", status=403)
 
-    # Optionally, check userId sent by Roblox
-    user_id = request.args.get("userId")
-    if not user_id:
-        return Response("Missing userId", status=400)
-
     global global_text
     with lock:
         if not global_text:
             return Response("", status=204)
+
         text = global_text
         global_text = ""  # delete after send
         return Response(text, mimetype="text/plain")
